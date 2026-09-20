@@ -775,7 +775,7 @@ st.markdown("---")
 st.markdown(
     """
     <div style="text-align:center;color:#777;">
-        🖤 Blink Social Hub 🌸
+        🖤 Blink Social Hub 🌸By ABIHA KASHIF
     """,
     unsafe_allow_html=True
 )

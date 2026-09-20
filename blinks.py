@@ -804,9 +804,7 @@ st.markdown("---")
 st.markdown(
     """
     <div style="text-align:center;color:#777;">
-        🖤 Blink Social Hub 🌸<br>
-        Built with Python + Streamlit + SQLite 💾
-    </div>
+        🖤 Blink Social Hub 🌸
     """,
     unsafe_allow_html=True
 )

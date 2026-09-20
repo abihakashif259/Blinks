@@ -424,35 +424,6 @@ if page == "🏠 Home":
         </p>
     </div>
     """, unsafe_allow_html=True)
-
-    st.subheader("🌸 The Four Icons")
-
-    members = [
-        ("🩷", "JISOO", "Visual • Vocal"),
-        ("🖤", "JENNIE", "Rapper • Vocal"),
-        ("💗", "ROSÉ", "Vocal • Guitar"),
-        ("💜", "LISA", "Dancer • Rapper")
-    ]
-
-    cols = st.columns(4)
-
-    for col, member in zip(cols, members):
-
-        with col:
-
-            st.markdown(f"""
-            <div class="card" style="text-align:center;">
-                <div style="font-size:45px;">
-                    {member[0]}
-                </div>
-
-                <h2>{member[1]}</h2>
-
-                <p>{member[2]}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-
 # =========================================================
 # FAN DIARY
 # =========================================================

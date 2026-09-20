@@ -1,6 +1,6 @@
+
 import streamlit as st
 import sqlite3
-import random
 
 # =========================================================
 # PAGE CONFIG
@@ -26,14 +26,6 @@ def get_connection():
 def create_tables():
     conn = get_connection()
     cursor = conn.cursor()
-
-    # Game score
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS game (
-            id INTEGER PRIMARY KEY,
-            score INTEGER DEFAULT 0
-        )
-    """)
 
     # Diary
     cursor.execute("""
@@ -67,13 +59,7 @@ def create_tables():
         )
     """)
 
-    # Create game record
-    cursor.execute("""
-        INSERT OR IGNORE INTO game (id, score)
-        VALUES (1, 0)
-    """)
-
-    # Create poll members
+    # Poll members
     members = ["Jisoo", "Jennie", "Rosé", "Lisa"]
 
     for member in members:
@@ -93,31 +79,7 @@ create_tables()
 # DATABASE FUNCTIONS
 # =========================================================
 
-def get_score():
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT score FROM game WHERE id = 1")
-    result = cursor.fetchone()
-
-    conn.close()
-
-    return result[0] if result else 0
-
-
-def add_score():
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        UPDATE game
-        SET score = score + 1
-        WHERE id = 1
-    """)
-
-    conn.commit()
-    conn.close()
-
+# ---------- DIARY ----------
 
 def get_diary():
     conn = get_connection()
@@ -162,6 +124,8 @@ def delete_diary(entry_id):
     conn.close()
 
 
+# ---------- POLLS ----------
+
 def get_polls():
     conn = get_connection()
     cursor = conn.cursor()
@@ -191,6 +155,8 @@ def add_vote(member):
     conn.commit()
     conn.close()
 
+
+# ---------- PINS ----------
 
 def get_pins():
     conn = get_connection()
@@ -235,11 +201,16 @@ def delete_pin(pin_id):
     conn.close()
 
 
+# ---------- BADGES ----------
+
 def get_badges():
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT name FROM badges")
+    cursor.execute("""
+        SELECT name
+        FROM badges
+    """)
 
     data = [row[0] for row in cursor.fetchall()]
 
@@ -353,32 +324,17 @@ div[data-baseweb="select"] * {
     color: #222222 !important;
 }
 
-/* Tabs */
+/* Radio */
 
-button[data-baseweb="tab"] {
-    color: #444444 !important;
+div[data-testid="stRadio"] label {
+    color: #222222 !important;
 }
 
-button[data-baseweb="tab"][aria-selected="true"] {
-    color: #d63384 !important;
-}
+/* Footer */
 
-/* Metric */
-
-.metric-card {
-    background: white;
-    padding: 18px;
-    border-radius: 18px;
+.footer {
     text-align: center;
-    box-shadow: 0 5px 18px rgba(0,0,0,0.06);
-}
-
-.metric-card h2 {
-    color: #d63384 !important;
-}
-
-.metric-card p {
-    color: #555555 !important;
+    color: #777777 !important;
 }
 
 </style>
@@ -396,7 +352,6 @@ page = st.sidebar.radio(
     "Navigate",
     [
         "🏠 Home",
-        "🎮 Song Game",
         "📝 Fan Diary",
         "🎤 Polls",
         "🎵 Music",
@@ -406,7 +361,10 @@ page = st.sidebar.radio(
 )
 
 st.sidebar.divider()
-st.sidebar.caption("BLACKPINK in your area")
+
+st.sidebar.caption(
+    "Your diary, polls, pins and badges are saved 💾"
+)
 
 
 # =========================================================
@@ -416,37 +374,44 @@ st.sidebar.caption("BLACKPINK in your area")
 if page == "🏠 Home":
 
     st.markdown(
-        "<h1 style='text-align:center;'>🖤 BLINK SOCIAL HUB 🌸</h1>",
+        "<h1 style='text-align:center;'>"
+        "🖤 BLINK SOCIAL HUB 🌸"
+        "</h1>",
         unsafe_allow_html=True
     )
 
     st.markdown(
         "<p style='text-align:center;color:#666;'>"
-        "A cozy place for Blinks to play, share & vibe ✨"
+        "A cozy place for Blinks to share & vibe ✨"
         "</p>",
         unsafe_allow_html=True
     )
 
-    score = get_score()
     diary = get_diary()
     polls = get_polls()
     pins = get_pins()
 
     total_votes = sum(polls.values())
 
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3 = st.columns(3)
 
     with c1:
-        st.metric("🎮 Game Score", score)
+        st.metric(
+            "📝 Memories",
+            len(diary)
+        )
 
     with c2:
-        st.metric("📝 Memories", len(diary))
+        st.metric(
+            "🎤 Votes",
+            total_votes
+        )
 
     with c3:
-        st.metric("🎤 Votes", total_votes)
-
-    with c4:
-        st.metric("📌 Pins", len(pins))
+        st.metric(
+            "📌 Pins",
+            len(pins)
+        )
 
     st.write("")
 
@@ -454,8 +419,8 @@ if page == "🏠 Home":
     <div class="card">
         <h2>💗 Welcome, Blink!</h2>
         <p>
-        Explore games, save your favorite memories,
-        vote in polls, enjoy music and create your own pin board.
+        Explore your fan diary, vote in polls,
+        enjoy music and create your own aesthetic pin board.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -477,93 +442,15 @@ if page == "🏠 Home":
 
             st.markdown(f"""
             <div class="card" style="text-align:center;">
-                <div style="font-size:45px;">{member[0]}</div>
+                <div style="font-size:45px;">
+                    {member[0]}
+                </div>
+
                 <h2>{member[1]}</h2>
+
                 <p>{member[2]}</p>
             </div>
             """, unsafe_allow_html=True)
-
-
-# =========================================================
-# SONG GAME
-# =========================================================
-
-elif page == "🎮 Song Game":
-
-    st.title("🎮 Guess the Song")
-
-    songs = {
-        "Hit you with that...": "DDU-DU DDU-DU",
-        "I'm going solo...": "SOLO",
-        "Look at me, look at you...": "Kill This Love",
-        "Taste that pink venom...": "Pink Venom",
-        "BLACKPINK in your area...": "BOOMBAYAH"
-    }
-
-    if "current_song" not in st.session_state:
-        st.session_state.current_song = random.choice(
-            list(songs.keys())
-        )
-
-    clue = st.session_state.current_song
-
-    st.markdown(f"""
-    <div class="card">
-        <h2>🎧 Lyric Clue</h2>
-        <h3>"{clue}"</h3>
-        <p>Can you guess the song?</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    guess = st.text_input(
-        "Your Answer",
-        placeholder="Type the song name..."
-    )
-
-    c1, c2 = st.columns(2)
-
-    with c1:
-
-        if st.button(
-            "💗 Check Answer",
-            use_container_width=True
-        ):
-
-            if guess.strip().lower() == songs[clue].lower():
-
-                add_score()
-
-                st.success("🎉 Correct! Blink power!")
-
-                if get_score() >= 5:
-                    add_badge("Song Master")
-
-                st.session_state.current_song = random.choice(
-                    list(songs.keys())
-                )
-
-                st.rerun()
-
-            else:
-
-                st.error("Oops! Try again 💗")
-
-    with c2:
-
-        if st.button(
-            "🔄 New Song",
-            use_container_width=True
-        ):
-
-            st.session_state.current_song = random.choice(
-                list(songs.keys())
-            )
-
-            st.rerun()
-
-    st.divider()
-
-    st.metric("🏆 Total Score", get_score())
 
 
 # =========================================================
@@ -595,13 +482,17 @@ elif page == "📝 Fan Diary":
             if len(get_diary()) >= 3:
                 add_badge("Memory Keeper")
 
-            st.success("Memory saved permanently 🌸")
+            st.success(
+                "Memory saved permanently 🌸"
+            )
 
             st.rerun()
 
         else:
 
-            st.warning("Please write something first.")
+            st.warning(
+                "Please write something first."
+            )
 
     st.divider()
 
@@ -610,7 +501,8 @@ elif page == "📝 Fan Diary":
     if not memories:
 
         st.info(
-            "Your diary is empty. Write your first memory! 💕"
+            "Your diary is empty. "
+            "Write your first memory! 💕"
         )
 
     else:
@@ -620,6 +512,7 @@ elif page == "📝 Fan Diary":
             with st.container(border=True):
 
                 st.subheader("🌸 Blink Memory")
+
                 st.write(text)
 
                 if st.button(
@@ -629,7 +522,9 @@ elif page == "📝 Fan Diary":
 
                     delete_diary(entry_id)
 
-                    st.success("Memory deleted.")
+                    st.success(
+                        "Memory deleted."
+                    )
 
                     st.rerun()
 
@@ -660,7 +555,9 @@ elif page == "🎤 Polls":
 
         add_vote(member)
 
-        st.success("Your vote has been saved! 🌸")
+        st.success(
+            "Your vote has been saved! 🌸"
+        )
 
         st.rerun()
 
@@ -670,7 +567,10 @@ elif page == "🎤 Polls":
 
     polls = get_polls()
 
-    total = max(sum(polls.values()), 1)
+    total = max(
+        sum(polls.values()),
+        1
+    )
 
     for name, votes in polls.items():
 
@@ -678,7 +578,9 @@ elif page == "🎤 Polls":
             f"**{name}** — {votes} votes"
         )
 
-        st.progress(votes / total)
+        st.progress(
+            votes / total
+        )
 
 
 # =========================================================
@@ -730,7 +632,10 @@ elif page == "🎵 Music":
 
     if music_link:
 
-        st.success("Track added to this session 🎧")
+        st.success(
+            "Track added to this session 🎧"
+        )
+
         st.write(music_link)
 
 
@@ -765,12 +670,17 @@ elif page == "📌 Pin Board":
 
         if title.strip() and image_url.strip():
 
-            add_pin(title, image_url)
+            add_pin(
+                title,
+                image_url
+            )
 
             if len(get_pins()) >= 3:
                 add_badge("Pin Collector")
 
-            st.success("Pin saved permanently 🌸")
+            st.success(
+                "Pin saved permanently 🌸"
+            )
 
             st.rerun()
 
@@ -794,7 +704,11 @@ elif page == "📌 Pin Board":
 
         cols = st.columns(3)
 
-        for i, (pin_id, title, image_url) in enumerate(pins):
+        for i, (
+            pin_id,
+            title,
+            image_url
+        ) in enumerate(pins):
 
             with cols[i % 3]:
 
@@ -811,7 +725,9 @@ elif page == "📌 Pin Board":
 
                     delete_pin(pin_id)
 
-                    st.success("Pin removed.")
+                    st.success(
+                        "Pin removed."
+                    )
 
                     st.rerun()
 
@@ -831,12 +747,6 @@ elif page == "🏆 Achievements":
     badges = get_badges()
 
     achievements = [
-        (
-            "🎮",
-            "Song Master",
-            "Get 5 correct answers."
-        ),
-
         (
             "📝",
             "Memory Keeper",
@@ -873,7 +783,10 @@ elif page == "🏆 Achievements":
     if badges:
 
         for badge in badges:
-            st.write(f"🏅 **{badge}**")
+
+            st.write(
+                f"🏅 **{badge}**"
+            )
 
     else:
 
@@ -891,7 +804,9 @@ st.markdown("---")
 st.markdown(
     """
     <div style="text-align:center;color:#777;">
-        🖤 Blink Social Hub 
+        🖤 Blink Social Hub 🌸<br>
+        Built with Python + Streamlit + SQLite 💾
+    </div>
     """,
     unsafe_allow_html=True
 )
